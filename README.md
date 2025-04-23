@@ -2,6 +2,7 @@ Brush Seal Leakage: Mathematical Modelling & CFD Validation
 
 
 This repository presents a comprehensive analysis of brush seal leakage in turbomachinery using both analytical modeling (MATLAB) and CFD validation (ANSYS Workbench). The goal is to evaluate leakage rates, visualize flow behavior, and model the impact of clearance and blow-down effects on performance.
+
  📂 Repository Contents
 | `brush_seal_leak.m` | MATLAB script for mathematical modeling of leakage with and without clearance, including blow-down effect estimation. |
 | `honey__dp1.wbpz` | Archived ANSYS Workbench project file containing the CFD setup, mesh, boundary conditions, and results for brush seal leakage simulation. |
