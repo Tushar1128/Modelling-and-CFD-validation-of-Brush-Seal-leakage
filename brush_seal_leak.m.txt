@@ -1,0 +1,230 @@
+% Given parameters from the competition and research papers
+d = 0.000102;         % Bristle diameter (m)
+N = 78700;            % Bristle density (bristles/m)
+t = 0.00115;          % Bristle pack thickness (m)
+phi_deg = 45;         % Lay angle in degrees
+H = 0.00188;          % Fence height (m)
+CL = 0;               % Clearance (zero for contact brush seal)
+PR = 2.0;             % Example pressure ratio (P_u / P_d)
+P_u = 6e5;            % Upstream pressure (Pa)
+P_d = 3e5;            % Downstream pressure (Pa)
+T_t = 300;            % Total temperature (K)
+mu = 1.8e-5;          % Dynamic viscosity of air (Pa·s)
+R = 287;              % Gas constant for air (J/kg·K)
+
+% 1. Calculate base porosity using Chew's formula
+phi_rad = deg2rad(phi_deg);
+epsilon_base = 1 - (pi * d^2 * N) / (4 * t * sin(phi_rad));
+
+% 2. Apply porosity correction factor (α) using Equation (4)
+alpha = 0.4581 * PR^(-0.0789) * ((H / d)^0.8468) * ((t / d)^(-0.6604)) - (0.2686)*(CL / d)^(0.5297);
+epsilon_corrected = alpha * epsilon_base;
+
+% 3. Calculate C and D (Pröstler’s model)
+C = ((1 - epsilon_corrected)^2) / (epsilon_corrected^3 * d^2);
+D = (1 - epsilon_corrected) / (epsilon_corrected^3 * d);
+
+% Flow resistance coefficients
+a_n = 80 * C;
+b_n = 1.16 * D;
+
+% 4. Estimate air density using ideal gas law (average pressure assumed)
+P_avg = (P_u + P_d) / 2;
+rho = P_avg / (R * T_t);
+
+% 5. Estimate flow area
+D_bore = 0.150;  % Bristle bore diameter (m)
+A = pi * D_bore * t;  % Flow area (m²)
+
+% 6. Solve for velocity using Darcy-Forchheimer equation
+% Delta P = mu/epsilon * b_n * u + rho/epsilon^2 * a_n * u^2
+
+A1 = mu / epsilon_corrected * b_n;
+A2 = rho / epsilon_corrected^2 * a_n;
+delta_P = P_u - P_d;
+
+% Quadratic equation: A2*u^2 + A1*u - delta_P = 0
+a = A2;
+b = A1;
+c = -delta_P;
+ 
+% Solve quadratic equation for u (velocity)
+u = (-b + sqrt(b^2 - 4*a*c)) / (2*a);
+
+% 7. Mass flow rate
+m_dot = rho * A * u;
+
+% % Output results
+% fprintf('Base Porosity: %.5f\n', epsilon_base);
+% fprintf('Porosity Correction Factor (alpha): %.5f\n', alpha);
+% fprintf('Corrected Porosity: %.5f\n', epsilon_corrected);
+% fprintf('Flow Resistance Coefficients:\n');
+% fprintf('  a_n: %.5f\n', a_n);
+% fprintf('  b_n: %.5f\n', b_n);
+% fprintf('Air Density: %.5f kg/m³\n', rho);
+% fprintf('Flow Area: %.5f m²\n', A);
+% fprintf('Velocity: %.5f m/s\n', u);
+% fprintf('Mass Flow Rate: %.5e kg/s\n', m_dot);
+
+
+%% with clearence of CL = 0.25mm with same above code 
+% Given parameters from the competition and research papers
+
+d = 0.000102;         % Bristle diameter (m)
+N = 78700;            % Bristle density (bristles/m)
+t = 0.00115;          % Bristle pack thickness (m)
+phi_deg = 45;         % Lay angle in degrees
+CL = 0.25e-3;               % Clearance (zero for contact brush seal)
+H = 0.00188-CL;          % Fence height (m)
+
+PR = 2.0;             % Example pressure ratio (P_u / P_d)
+P_u = 6e5;            % Upstream pressure (Pa)
+P_d = 3e5;            % Downstream pressure (Pa)
+T_t = 300;            % Total temperature (K)
+mu = 1.8e-5;          % Dynamic viscosity of air (Pa·s)
+R = 287;              % Gas constant for air (J/kg·K)
+
+% 1. Calculate base porosity using Chew's formula
+phi_rad = deg2rad(phi_deg);
+epsilon_base = 1 - (pi * d^2 * N) / (4 * t * sin(phi_rad));
+
+% 2. Apply porosity correction factor (α) using Equation (4)
+alpha = 0.4581 * PR^(-0.0789) * (H / d)^0.8468 * (t / d)^(-0.6604) - (0.2686)*(CL / d)^(0.5297);
+epsilon_corrected = alpha * epsilon_base;
+
+% 3. Calculate C and D (Pröstler’s model)
+C = ((1 - epsilon_corrected)^2) / (epsilon_corrected^3 * d^2);
+D = (1 - epsilon_corrected) / (epsilon_corrected^3 * d);
+
+% Flow resistance coefficients
+a_n = 80 * C;
+b_n = 1.16 * D;
+
+% 4. Estimate air density using ideal gas law (average pressure assumed)
+P_avg = (P_u + P_d) / 2;
+rho = P_avg / (R * T_t);
+
+% 5. Estimate flow area
+D_bore = 0.150;  % Bristle bore diameter (m)
+A = pi * D_bore * t;  % Flow area (m²)
+
+% 6. Solve for velocity using Darcy-Forchheimer equation
+% Delta P = mu/epsilon * b_n * u + rho/epsilon^2 * a_n * u^2
+
+A1 = mu / epsilon_corrected * b_n;
+A2 = rho / epsilon_corrected^2 * a_n;
+delta_P = P_u - P_d;
+
+% Quadratic equation: A2*u^2 + A1*u - delta_P = 0
+a = A2;
+b = A1;
+c = -delta_P;
+
+% Solve quadratic equation for u (velocity)
+u = (-b + sqrt(b^2 - 4*a*c)) / (2*a);
+
+% 7. Mass flow rate
+m_dot_cl = rho * A * u;
+
+% % Output results
+% fprintf('Base Porosity: %.5f\n', epsilon_base);
+% fprintf('Porosity Correction Factor (alpha): %.5f\n', alpha);
+% fprintf('Corrected Porosity: %.5f\n', epsilon_corrected);
+% fprintf('Flow Resistance Coefficients:\n');
+% fprintf('  a_n: %.5f\n', a_n);
+% fprintf('  b_n: %.5f\n', b_n);
+% fprintf('Air Density: %.5f kg/m³\n', rho);
+% fprintf('Flow Area: %.5f m²\n', A);
+% fprintf('Velocity: %.5f m/s\n', u);
+% fprintf('Mass Flow Rate: %.5e kg/s\n', m_dot);
+
+
+% Constants
+gamma = 1.4;           % Specific heat ratio for air
+R = 287;               % Gas constant for air (J/kg·K)
+Cd = 0.6;              % Discharge coefficient (typically between 0.7–0.9)
+Pu = 6e5;              % Upstream pressure in Pa
+Tu = 300;              % Upstream temperature in K
+D_bore = 0.150;        % Bristle bore diameter in meters
+CL_eff = 0.00075;      % Effective clearance (after blow-down correction), in meters
+d_rotor = 150e-3;
+% Flow area through clearance (annular slit)
+A_cl = pi * D_bore * CL_eff;
+
+% Choked flow mass flow rate formula
+mdot_cl = Cd * A_cl * Pu * sqrt((gamma / (R * Tu)) * (2 / (gamma + 1))^((gamma + 1) / (gamma - 1)));
+
+m_cl = mdot_cl + m_dot_cl;
+
+
+%%now modelling the  blow down effect 
+
+ref = (gamma+1/2)^(gamma/gamma-1);
+
+if PR < ref
+    Q = sqrt((2*gamma/R*(gamma+1)) *((P_d/P_u)^(2/gamma) - (P_d/P_u)^(gamma+1/gamma)));
+else 
+    Q = sqrt((2*gamma/R*(gamma+1))^(gamma+1/gamma-1));
+end 
+
+
+heff1 = m_cl*sqrt(T_t)/(pi*d_rotor*P_u*Q);
+heff2 = m_dot*sqrt(T_t)/(pi*d_rotor*P_u*Q);
+
+blow_down = ((heff1 - heff2)/(CL/d)^0.21) - (CL/(CL/d)^(PR/2));
+
+bl_clr = CL - blow_down;
+
+
+alpha = 0.4581 * PR^(-0.0789) * (H / d)^0.8468 * (t / d)^(-0.6604) - (0.2686)*(bl_clr / d)^(0.5297);
+epsilon_corrected = alpha * epsilon_base;
+
+% 3. Calculate C and D (Pröstler’s model)
+C = ((1 - epsilon_corrected)^2) / (epsilon_corrected^3 * d^2);
+D = (1 - epsilon_corrected) / (epsilon_corrected^3 * d);
+a_n = 80 * C;
+b_n = 1.16 * D;
+
+P_avg = (P_u + P_d) / 2;
+rho = P_avg / (R * T_t);
+
+
+D_bore = 0.150;  % Bristle bore diameter (m)
+A = pi * D_bore * t;  % Flow area (m²)
+
+% Delta P = mu/epsilon * b_n * u + rho/epsilon^2 * a_n * u^2
+
+A1 = mu / epsilon_corrected * b_n;
+A2 = rho / epsilon_corrected^2 * a_n;
+delta_P = P_u - P_d;
+
+a = A2;
+b = A1;
+c = -delta_P;
+
+u = (-b + sqrt(b^2 - 4*a*c)) / (2*a);
+
+mcl1 = rho * A * u;
+
+
+A_cl1 = pi * D_bore * bl_clr;
+
+% Choked flow mass flow rate formula
+mcl2 = Cd * A_cl1 * Pu * sqrt((gamma / (R * Tu)) * (2 / (gamma + 1))^((gamma + 1) / (gamma - 1)));
+
+m_cl_blow_down = mcl1+mcl2;
+
+
+%% printing the final results 
+
+%leakage mass flow rate without clearence 
+disp(m_dot_cl)
+
+%leakage mass flow rate with clearence = 0.25mm 
+disp(m_cl)
+
+%leakage mass flow rate with clearence and blow down effect modelling 
+disp(m_cl_blow_down)
+
+
+
